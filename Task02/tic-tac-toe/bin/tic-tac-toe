@@ -1,0 +1,25 @@
+#!/usr/bin/env php
+
+<?php
+
+$autoloadLocal = __DIR__ . '/../vendor/autoload.php';
+$autoloadGlobal = __DIR__ . '/../../../autoload.php';
+
+if (file_exists($autoloadLocal)) {
+    require $autoloadLocal;
+} elseif (file_exists($autoloadGlobal)) {
+    require $autoloadGlobal;
+} else {
+    echo 
+    "\033[31m   Не найден autoload \n" .
+    "\033[34m При локальной установке попробуйте: \n" .
+    "\033[32m   1   composer install\n\n" .
+    "\033[34m При глобальной установке: \n" .
+    "\033[32m   1   composer global require wp-cli/wp-cli\n" .
+    "\033[32m   2   composer global dump-autoload -o \033[0m\n";
+    exit(1);
+}
+
+use function Darkflade\Tic_tac_toe\Controller\startGame;
+
+startGame();

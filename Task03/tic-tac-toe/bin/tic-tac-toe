@@ -1,0 +1,47 @@
+#!/usr/bin/env php
+
+<?php
+
+$autoloadLocal = __DIR__ . '/../vendor/autoload.php';
+$autoloadGlobal = __DIR__ . '/../../../autoload.php';
+
+if (file_exists($autoloadLocal)) {
+    require $autoloadLocal;
+} elseif (file_exists($autoloadGlobal)) {
+    require $autoloadGlobal;
+} else {
+    echo 
+    "\033[31m   Не найден autoload \n" .
+    "\033[34m При локальной установке попробуйте: \n" .
+    "\033[32m   1   composer install\n\n" .
+    "\033[34m При глобальной установке: \n" .
+    "\033[32m   1   composer global require wp-cli/wp-cli\n" .
+    "\033[32m   2   composer global dump-autoload -o \033[0m\n";
+    exit(1);
+}
+
+$options = getopt("nlr:h", ["new","list","replay:","help"]);
+
+if (isset($options['h']) || isset($options['help'])) {
+    echo "Tic-Tac-Toe CLI\n";
+    echo "Доступные ключи:\n";
+    echo "  -n, --new      Новая игра (по умолчанию)\n";
+    echo "  -l, --list     Список сохраненных игр (в разработке)\n";
+    echo "  -r id, --replay=id  Повтор игры с идентификатором id (в разработке)\n";
+    echo "  -h, --help     Эта справка\n";
+    exit(0);
+}
+
+if (isset($options['l']) || isset($options['list'])) {
+    echo "Список сохраненных игр — В разработке\n";
+    exit(0);
+}
+
+if (isset($options['r']) || isset($options['replay'])) {
+    echo "Повтор игры с id=" . ($options['r'] ?? $options['replay']) . " — В разработке\n";
+    exit(0);
+}
+
+use function Darkflade\TicTacToe\Controller\startGame;
+
+startGame();

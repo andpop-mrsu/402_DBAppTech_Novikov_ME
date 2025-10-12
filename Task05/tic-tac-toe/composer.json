@@ -1,0 +1,21 @@
+
+{
+    "name": "darkflade/tic-tac-toe",
+    "description": "game",
+    "type": "project",
+    "bin": [
+        "bin/tic-tac-toe"
+    ],
+    "require": {
+        "wp-cli/php-cli-tools": "^0.12.6",
+        "gabordemooij/redbean": "^5.7.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Darkflade\\TicTacToe\\": "src/"
+        },
+        "files": [
+            "src/Controller.php"
+        ]
+    }
+}

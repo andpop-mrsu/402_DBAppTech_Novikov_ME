@@ -1,0 +1,101 @@
+#!/usr/bin/env php
+
+<?php
+
+$autoloadLocal = __DIR__ . '/../vendor/autoload.php';
+$autoloadGlobal = __DIR__ . '/../../../autoload.php';
+
+// Colors in terminal:
+//\e[34m  Blue
+//\e[32m  Green
+//\e[31m  Red
+//\e[0m   Reset
+
+if (file_exists($autoloadLocal)) {
+    require $autoloadLocal;
+} elseif (file_exists($autoloadGlobal)) {
+    require $autoloadGlobal;
+} else {
+    echo 
+    "\e[31m   Не найден autoload \n" .
+    "\e[34m При локальной установке попробуйте: \n" .
+    "\e[32m   1   composer install\n\n" .
+    "\e[34m При глобальной установке: \n" .
+    "\e[32m   1   composer global require wp-cli/wp-cli\n" .
+    "\e[32m   2   composer global dump-autoload -o \e[0m\n";
+    exit(1);
+}
+
+use Darkflade\TicTacToe\DB\Database;
+
+$db = new Database();
+
+$options = getopt("nlr:h", ["new","list","replay:","help"]);
+
+// Help flag
+if (isset($options['h']) || isset($options['help'])) {
+    echo "\e[36mTic-Tac-Toe CLI\n";
+    echo "\e[0;92;49mДоступные ключи:\n";
+    echo "  \e[0;92;49m-n\e[0m, \e[0;92;49m--new\e[0m      Новая игра (по умолчанию)\n";
+    echo "  \e[0;92;49m-l\e[0m, \e[0;92;49m--list\e[0m     Список сохраненных игр (в разработке)\n";
+    echo "  \e[0;92;49m-r id\e[0m, \e[0;92;49m--replay=id\e[0m  Повтор игры с идентификатором id (в разработке)\n";
+    echo "  \e[0;92;49m-h\e[0m, \e[0;92;49m--help\e[0m     Эта справка\n";
+    exit(0);
+}
+
+// List flag
+if (isset($options['l']) || isset($options['list'])) {
+    echo "\e[0;30;102m Список сохраненных игр\e[0;39;49m\n";
+    $gamesList = $db->listGames();
+    if (empty($gamesList)) {
+        echo "\e[5;34;49m Сохраненных игр нет.\n \e[0m";
+        exit(0);
+    }
+    /*
+    print_r("\e[0;32;49m" . print_r($gamesList, true) . "\n \e[0m");
+    exit(0);
+    */
+    foreach ($gamesList as $game) {
+        printf(
+            "\e[0;32;49m[#%d] %s | Поле %dx%d | Игрок: %s (%s) | Победитель: %s\e[0m\n",
+            $game['id'],
+            $game['date'],
+            $game['board_size'],
+            $game['board_size'],
+            $game['player_name'],
+            $game['human_symbol'],
+            $game['winner_symbol'] ?? '-'
+        );
+    }
+    exit(0);
+}
+
+// Replay flag
+if (isset($options['r']) || isset($options['replay'])) {
+    $id = (int)($options['r'] ?? $options['replay']);
+    echo "\e[0;30;102m Повтор игры с id={$id} \e[0m\n";
+
+    $game = $db->getGame($id);
+    if ($game === null) {
+        echo "\e[5;34;49m Игра с id=$id не найдена.\n \e[0m";
+        exit(1);
+    }
+
+    $N = $game['board_size'];
+    $moves = json_decode($game['moves_json'], true);
+
+    $board = new \Darkflade\TicTacToe\AI\Board($N);
+
+    foreach ($moves as $move) {
+        $board->set($move['x'], $move['y'], $move['symbol']);
+        \Darkflade\TicTacToe\View::renderBoard($board);
+        usleep(300_000); // 300 мс
+    }
+
+    echo "\n\e[0;32;49mИгра завершена. Победитель: {$game['winner_symbol']}\e[0m\n";
+    exit(0);
+}
+
+use function Darkflade\TicTacToe\Controller\startGame;
+
+startGame();
